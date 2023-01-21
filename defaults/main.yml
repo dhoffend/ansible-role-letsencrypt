@@ -32,3 +32,6 @@ letsencrypt_subset_names: True
 
 # Set global extra commandline options for certbot
 letsencrypt_opts_extra: ""
+
+# force/renew registration even accounts already exists
+letsencrypt_force_register: false

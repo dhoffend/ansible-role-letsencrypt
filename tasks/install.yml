@@ -83,6 +83,6 @@
     {{ letsencrypt_opt_email }}
     {{ letsencrypt_opts_extra }}
     --non-interactive --agree-tos --quiet
-  when: not letsencrypt_reg_accounts_dir.stat.exists
+  when: not letsencrypt_reg_accounts_dir.stat.exists or letsencrypt_force_register|default()|bool
   tags:
     - molecule-notest
