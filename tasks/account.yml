@@ -60,4 +60,4 @@
       --non-interactive --agree-tos --quiet
     register: letsencrypt_reg_account
     changed_when: letsencrypt_reg_account.rc != 0
-    when: not letsencrypt_reg_accounts_dir.stat.exists
+    when: not letsencrypt_reg_accounts_dir.stat.exists or letsencrypt_force_register | default(false) | bool
