@@ -107,7 +107,6 @@
     --keep-until-expiring --expand
     {{ letsencrypt_opt_allow_subset_of_names | default() }}
     --non-interactive --agree-tos
-    --manual-public-ip-logging-ok
     --manual-auth-hook 'certbot-dns-hook.sh auth'
     --manual-cleanup-hook 'certbot-dns-hook.sh cleanup'
     {{ letsencrypt_opt_post_hook | default() }}
