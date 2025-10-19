@@ -46,6 +46,7 @@
       ansible.builtin.group:
         name: letsencrypt
         system: true
+
     - name: Adjust permissions for certificate directories
       ansible.builtin.file:
         path: "{{ item }}"

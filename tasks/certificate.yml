@@ -2,17 +2,17 @@
 - name: Prepare authenticator options for apache
   ansible.builtin.set_fact:
     letsencrypt_opt_http_auth: "--apache"
-  when: letsencrypt_cert.http_auth|default(letsencrypt_http_auth) == 'apache'
+  when: letsencrypt_cert.http_auth | default(letsencrypt_http_auth) == 'apache'
 
 - name: Prepare authenticator options for nginx
   ansible.builtin.set_fact:
     letsencrypt_opt_http_auth: "--nginx"
-  when: letsencrypt_cert.http_auth|default(letsencrypt_http_auth) == 'nginx'
+  when: letsencrypt_cert.http_auth | default(letsencrypt_http_auth) == 'nginx'
 
 - name: Prepare authenticator options for standalone
   ansible.builtin.set_fact:
     letsencrypt_opt_http_auth: "--standalone"
-  when: letsencrypt_cert.http_auth|default(letsencrypt_http_auth) == 'standalone'
+  when: letsencrypt_cert.http_auth | default(letsencrypt_http_auth) == 'standalone'
 
 - name: Prepare authenticator options for webroot
   ansible.builtin.set_fact:
@@ -26,7 +26,7 @@
 
 - name: Prepare optional test cert option
   ansible.builtin.set_fact:
-    letsencrypt_opt_test_cert: "{{ letsencrypt_test | default() | ternary('--test-cert', '') }}"
+    letsencrypt_opt_test_cert: "{{ letsencrypt_test | default(false) | ternary('--test-cert', '') }}"
 
 - name: Prepare reuse-key option
   ansible.builtin.set_fact:
@@ -81,20 +81,20 @@
 - name: Register Let's Encrypt certificate with HTTP challenge
   ansible.builtin.command: >
     certbot certonly
-    {{ letsencrypt_opt_http_auth | default() }}
-    {{ letsencrypt_opt_cert_name | default() }}
-    {{ letsencrypt_opt_test_cert | default() }}
-    {{ letsencrypt_opt_reuse_key | default() }}
-    {{ letsencrypt_cert.opts_extra | default(letsencrypt_opts_extra | default()) }}
+    {{ letsencrypt_opt_http_auth | default('') }}
+    {{ letsencrypt_opt_cert_name | default('') }}
+    {{ letsencrypt_opt_test_cert | default('') }}
+    {{ letsencrypt_opt_reuse_key | default('') }}
+    {{ letsencrypt_cert.opts_extra | default(letsencrypt_opts_extra | default('')) }}
     --domains {{ letsencrypt_cert.domains | join(',') }}
     --keep-until-expiring --expand
-    {{ letsencrypt_opt_allow_subset_of_names | default() }}
+    {{ letsencrypt_opt_allow_subset_of_names | default('') }}
     --non-interactive --agree-tos
-    {{ letsencrypt_opt_post_hook | default() }}
-    {{ letsencrypt_opt_deploy_hook | default() }}
-    {{ letsencrypt_opt_renew_hook | default() }}
+    {{ letsencrypt_opt_post_hook | default('') }}
+    {{ letsencrypt_opt_deploy_hook | default('') }}
+    {{ letsencrypt_opt_renew_hook | default('') }}
   when:
-    - letsencrypt_cert.challenge | default() == 'http'
+    - letsencrypt_cert.challenge | default('') == 'http'
     - letsencrypt_cert.domains | default([]) | length > 0
   register: letsencrypt_reg_certbot_http
   changed_when: not "no action taken" in letsencrypt_reg_certbot_http.stdout
@@ -102,20 +102,20 @@
 - name: Register Let's Encrypt certificate with DNS challenge
   ansible.builtin.command: >
     certbot certonly --manual
-    {{ letsencrypt_opt_cert_name | default() }}
-    {{ letsencrypt_opt_test_cert | default() }}
+    {{ letsencrypt_opt_cert_name | default('') }}
+    {{ letsencrypt_opt_test_cert | default('') }}
     --domains {{ letsencrypt_cert.domains | join(',') }}
     --preferred-challenge=dns
     --keep-until-expiring --expand
-    {{ letsencrypt_opt_allow_subset_of_names | default() }}
+    {{ letsencrypt_opt_allow_subset_of_names | default('') }}
     --non-interactive --agree-tos
     --manual-auth-hook 'certbot-dns-hook.sh auth'
     --manual-cleanup-hook 'certbot-dns-hook.sh cleanup'
-    {{ letsencrypt_opt_post_hook | default() }}
-    {{ letsencrypt_opt_deploy_hook | default() }}
-    {{ letsencrypt_opt_renew_hook | default() }}
+    {{ letsencrypt_opt_post_hook | default('') }}
+    {{ letsencrypt_opt_deploy_hook | default('') }}
+    {{ letsencrypt_opt_renew_hook | default('') }}
   when:
-    - letsencrypt_cert.challenge | default() == 'dns'
+    - letsencrypt_cert.challenge | default('') == 'dns'
     - letsencrypt_cert.domains | default([]) | length > 0
   register: letsencrypt_reg_certbot_dns
   changed_when: not "no action taken" in letsencrypt_reg_certbot_dns.stdout
