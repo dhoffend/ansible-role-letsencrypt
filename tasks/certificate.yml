@@ -22,7 +22,7 @@
 - name: Prepare cert name option
   ansible.builtin.set_fact:
     letsencrypt_opt_cert_name: "--cert-name {{ letsencrypt_cert.name }}"
-  when: letsencrypt_cert.name | default()
+  when: letsencrypt_cert.name | default('', true) | length > 0
 
 - name: Prepare optional test cert option
   ansible.builtin.set_fact:
@@ -39,35 +39,35 @@
 - name: "Prepare post-hook options #1"
   ansible.builtin.set_fact:
     letsencrypt_opt_post_hook: "--post-hook '{{ letsencrypt_cert.post_hook }}'"
-  when: letsencrypt_cert.post_hook|default()
+  when: letsencrypt_cert.post_hook | default('', true) | length > 0
 
 - name: "Prepare post-hook options #2"
   ansible.builtin.set_fact:
     letsencrypt_opt_post_hook: "--post-hook 'systemctl restart {{ letsencrypt_cert.services | join(' ') }}'"
   when:
-    - not letsencrypt_cert.post_hook | default()
-    - letsencrypt_cert.services | default()
+    - letsencrypt_cert.post_hook | default('', true) | length == 0
+    - letsencrypt_cert.services | default('', true) | length > 0
     - letsencrypt_cert_use_post_hook_for_service_restart | default(True)
     - not letsencrypt_cert_use_deploy_hook_for_service_restart | default(False)
 
 - name: "Prepare deploy-hook options #1"
   ansible.builtin.set_fact:
     letsencrypt_opt_deploy_hook: "--deploy-hook '{{ letsencrypt_cert.deploy_hook }}'"
-  when: letsencrypt_cert.deploy_hook|default()
+  when: letsencrypt_cert.deploy_hook | default('', true) | length > 0
 
 - name: "Prepare deploy-hook options #2"
   ansible.builtin.set_fact:
     letsencrypt_opt_deploy_hook: "--deploy-hook 'systemctl restart {{ letsencrypt_cert.services | join(' ') }}'"
   when:
-    - not letsencrypt_cert.deploy_hook | default()
-    - letsencrypt_cert.services | default()
+    - letsencrypt_cert.deploy_hook | default('', true) | length == 0
+    - letsencrypt_cert.services | default('', true) | length > 0
     - not letsencrypt_cert_use_post_hook_for_service_restart | default(True)
     - letsencrypt_cert_use_deploy_hook_for_service_restart | default(False)
 
 - name: "Prepare renew-hook options"
   ansible.builtin.set_fact:
     letsencrypt_opt_renew_hook: "--renew-hook '{{ letsencrypt_cert.renew_hook }}'"
-  when: letsencrypt_cert.renew_hook|default()
+  when: letsencrypt_cert.renew_hook | default('', true) | length > 0
 
 - name: Create webroot directory
   ansible.builtin.file:
@@ -93,7 +93,9 @@
     {{ letsencrypt_opt_post_hook | default() }}
     {{ letsencrypt_opt_deploy_hook | default() }}
     {{ letsencrypt_opt_renew_hook | default() }}
-  when: letsencrypt_cert.challenge | default() == 'http' and letsencrypt_cert.domains | default()
+  when:
+    - letsencrypt_cert.challenge | default() == 'http'
+    - letsencrypt_cert.domains | default([]) | length > 0
   register: letsencrypt_reg_certbot_http
   changed_when: not "no action taken" in letsencrypt_reg_certbot_http.stdout
 
@@ -112,7 +114,9 @@
     {{ letsencrypt_opt_post_hook | default() }}
     {{ letsencrypt_opt_deploy_hook | default() }}
     {{ letsencrypt_opt_renew_hook | default() }}
-  when: letsencrypt_cert.challenge | default() == 'dns' and letsencrypt_cert.domains | default()
+  when:
+    - letsencrypt_cert.challenge | default() == 'dns'
+    - letsencrypt_cert.domains | default([]) | length > 0
   register: letsencrypt_reg_certbot_dns
   changed_when: not "no action taken" in letsencrypt_reg_certbot_dns.stdout
 
@@ -130,7 +134,7 @@
   when: letsencrypt_cert.users | default() and item in letsencrypt_reg_system_users.stdout_lines | default([])
 
 - name: Allow group
-  when: letsencrypt_group
+  when: letsencrypt_group | bool
   block:
     - name: Get dest of current private key
       ansible.builtin.file:
