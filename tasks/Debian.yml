@@ -1,7 +1,7 @@
 ---
 - name: Install nsupdate which is used by the certbot auth-hook
   ansible.builtin.apt:
-    pkg: dnsutils
+    pkg: "{{ 'bind9-dnsutils' if ansible_distribution_major_version is version_compare('12', '>=') else 'dnsutils' }}"
     state: present
     cache_valid_time: 600
   when:
