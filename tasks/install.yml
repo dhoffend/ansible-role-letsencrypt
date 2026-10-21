@@ -4,6 +4,7 @@
 
 - name: LetsEncrypt DNS Challenge
   when: letsencrypt_dns_challenge
+  become: true
   block:
     - name: Install certbot DNS challenge helper script
       ansible.builtin.template:
